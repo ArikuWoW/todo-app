@@ -13,15 +13,19 @@ import (
 )
 
 func main() {
+	// Инициализация конфига
 	if err := initConfig(); err != nil {
 		log.Fatalf("Error initializing configs: %s", err.Error())
 	}
 
+	// Загружаем env файл где хранятся переменные окружения
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("error loading env variables: %s", err.Error())
 	}
 
-	// Инициализируем базу передав нужные значения
+	// Подключение к БД, с помощью viper читаю конфиг
+	// Получаю с getenv пароль из .env
+	// Передаю все данные в функцию подключения к бд
 	db, err := repository.NewPostgresDB(repository.Config{
 		Host:     viper.GetString("db.host"),
 		Port:     viper.GetString("db.port"),
