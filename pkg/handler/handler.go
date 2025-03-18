@@ -30,8 +30,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.POST("/sign-up", h.signUp)
 		auth.POST("/sign-in", h.signIn)
 	}
-
-	api := router.Group("/api")
+	// Проверяем авторизацию и закидываем в middleware
+	api := router.Group("/api", h.userIdentity)
 	{
 		lists := api.Group("/lists")
 		{
