@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	todoapp "github.com/ArikuWoW/todo-app"
@@ -9,18 +8,21 @@ import (
 	"github.com/ArikuWoW/todo-app/pkg/repository"
 	"github.com/ArikuWoW/todo-app/pkg/service"
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 func main() {
+	// Настраиваем логгер так, что бы все логи выводились в json
+	logrus.SetFormatter(new(logrus.JSONFormatter))
 	// Инициализация конфига
 	if err := initConfig(); err != nil {
-		log.Fatalf("Error initializing configs: %s", err.Error())
+		logrus.Fatalf("Error initializing configs: %s", err.Error())
 	}
 
 	// Загружаем env файл где хранятся переменные окружения
 	if err := godotenv.Load(); err != nil {
-		log.Fatalf("error loading env variables: %s", err.Error())
+		logrus.Fatalf("error loading env variables: %s", err.Error())
 	}
 
 	// Подключение к БД, с помощью viper читаю конфиг
@@ -35,7 +37,7 @@ func main() {
 		SSLMode:  viper.GetString("db.sslmode"),
 	})
 	if err != nil {
-		log.Fatalf("failed to initialize db: %s", err.Error())
+		logrus.Fatalf("failed to initialize db: %s", err.Error())
 	}
 
 	//Создаю инстанты всех слоев
@@ -51,8 +53,8 @@ func main() {
 	srv := new(todoapp.Server)
 
 	// Пытаемся запустить сервер методом Server и обрабатываем возможную ошибку
-	if err := srv.Run(viper.GetString("8080"), handlers.InitRoutes()); err != nil {
-		log.Fatalf("Error occured while running http server: %s", err.Error())
+	if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
+		logrus.Fatalf("Error occured while running http server: %s", err.Error())
 	}
 }
 

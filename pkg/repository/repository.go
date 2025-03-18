@@ -1,9 +1,14 @@
 package repository
 
-import "github.com/jmoiron/sqlx"
+import (
+	todoapp "github.com/ArikuWoW/todo-app"
+	"github.com/jmoiron/sqlx"
+)
 
 // Это интерфейс, который описывает методы для работы с авторизацией в БД
 type Authorization interface {
+	CreateUser(user todoapp.User) (int, error)
+	GetUser(username, password string) (todoapp.User, error)
 }
 
 // Интерфейс для работы со списками задач в бд
@@ -21,7 +26,8 @@ type Repository struct {
 	TodoItem
 }
 
-//
 func NewRepository(db *sqlx.DB) *Repository {
-	return &Repository{}
+	return &Repository{
+		Authorization: NewAuthPostgres(db),
+	}
 }

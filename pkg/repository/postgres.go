@@ -1,4 +1,5 @@
-// Файл для настройки подключения к PostgreSql
+// Файл реализует функцию подключения к БД
+// Хранит константы имет таблицы и структуру настроек
 package repository
 
 import (
@@ -7,6 +8,15 @@ import (
 	"github.com/jmoiron/sqlx"
 	// Драйвер для работы с sql
 	_ "github.com/lib/pq"
+)
+
+// Константы таблиц
+const (
+	usersTable      = "users"
+	todoListTable   = "todo_lists"
+	usersListTable  = "users_lists"
+	todoItemsTable  = "todo_items"
+	listsItemsTable = "lists_items"
 )
 
 // Структура с параметрами подключения к PostgreSql

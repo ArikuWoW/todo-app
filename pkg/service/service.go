@@ -1,9 +1,14 @@
 package service
 
-import "github.com/ArikuWoW/todo-app/pkg/repository"
+import (
+	todoapp "github.com/ArikuWoW/todo-app"
+	"github.com/ArikuWoW/todo-app/pkg/repository"
+)
 
 // Эти интерфейсы описывают методы бизнес-логики, которые будут рабоать с методами репозитория
 type Authorization interface {
+	CreateUser(user todoapp.User) (int, error)
+	GenerateToken(username, password string) (string, error)
 }
 
 type TodoList interface {
@@ -18,6 +23,9 @@ type Service struct {
 	TodoItem
 }
 
+// Конструктор, который создает и инициализирует объякты структур с нужными зависимостями
 func NewService(repos *repository.Repository) *Service {
-	return &Service{}
+	return &Service{
+		Authorization: NewAuthService(repos.Authorization),
+	}
 }
