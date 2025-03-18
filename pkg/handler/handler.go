@@ -1,9 +1,19 @@
 package handler
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/ArikuWoW/todo-app/pkg/service"
+	"github.com/gin-gonic/gin"
+)
 
 // Может содержать зависимости
+// Через нее обработчики смогут использовать сервисы для выполнения логики
 type Handler struct {
+	services *service.Service
+}
+
+// Сохраняю переданный сервис, что бы в методах хендлера вызывать методы сервиса
+func NewHandler(services *service.Service) *Handler {
+	return &Handler{services: services}
 }
 
 // Метод для инициализации всех наших эндпойнтов(маршрутов)
@@ -35,9 +45,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			{
 				items.POST("/", h.createItem)
 				items.GET("/", h.getAllItems)
-				items.GET("/item_id", h.getItemById)
-				items.PUT("/item_id", h.updateItem)
-				items.DELETE("/item_id", h.deleteItem)
+				items.GET("/:item_id", h.getItemById)
+				items.PUT("/:item_id", h.updateItem)
+				items.DELETE("/:item_id", h.deleteItem)
 			}
 		}
 	}
