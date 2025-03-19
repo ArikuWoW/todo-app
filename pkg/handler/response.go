@@ -6,12 +6,12 @@ import (
 )
 
 // Структура, которую будем отправлять при ошибке
-type Error struct {
+type errorResponse struct {
 	Message string `json:"message"`
 }
 
 // Логируем ошибку
 func newErrorResponse(c *gin.Context, statusCode int, message string) {
 	logrus.Error(message)
-	c.AbortWithStatusJSON(statusCode, Error{message})
+	c.AbortWithStatusJSON(statusCode, errorResponse{message})
 }
