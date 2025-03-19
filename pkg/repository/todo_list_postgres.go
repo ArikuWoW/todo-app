@@ -3,9 +3,11 @@ package repository
 
 import (
 	"fmt"
+	"strings"
 
 	todoapp "github.com/ArikuWoW/todo-app"
 	"github.com/jmoiron/sqlx"
+	"github.com/sirupsen/logrus"
 )
 
 // Структура содержит подключение к БД
@@ -67,4 +69,53 @@ func (r *TodoListPostgres) GetById(userId, listId int) (todoapp.TodoList, error)
 	err := r.db.Get(&list, query, userId, listId)
 
 	return list, err
+}
+
+// Функция удаления списка
+func (r *TodoListPostgres) Delete(userId, listId int) error {
+	// Собираем sql запрос для удаления из бд
+	query := fmt.Sprintf("DELETE FROM %s tl USING %s ul WHERE tl.id = ul.list_id AND ul.user_id=$1 AND ul.list_id=$2", todoListTable, usersListTable)
+	// Выполняем запрос подставляя параметры
+	_, err := r.db.Exec(query, userId, listId)
+	return err
+}
+
+// Функция обновления существующего списка
+func (r *TodoListPostgres) Update(userId, listId int, input todoapp.UpdateListInput) error {
+	// Хранит sql Set выражения: title=$1, description=$2
+	setValues := make([]string, 0)
+	// Список значений для подстановки в запрос
+	args := make([]interface{}, 0)
+	// Счетчик для параметров $1, $2
+	argId := 1
+
+	// Динамическая сборка запроса
+	// Проверяем наличие title и description
+	if input.Title != nil {
+		// Если есть добавсляем в set
+		setValues = append(setValues, fmt.Sprintf("title=$%d", argId))
+		args = append(args, *input.Title)
+		argId++
+	}
+
+	if input.Description != nil {
+		setValues = append(setValues, fmt.Sprintf("description=$%d", argId))
+		args = append(args, *input.Description)
+		argId++
+	}
+
+	// СБорка финального запроса
+	// Объединяем слайс в строку title=$1, description=$2
+	setQuery := strings.Join(setValues, ", ")
+
+	query := fmt.Sprintf("UPDATE %s tl SET %s FROM %s ul WHERE tl.id = ul.list_id AND ul.list_id=$%d AND ul.user_id=$%d",
+		todoListTable, setQuery, usersListTable, argId, argId+1)
+	args = append(args, listId, userId)
+
+	// Логируем сформировавшийся запрос
+	logrus.Debugf("updateQuery: %s", query)
+	logrus.Debugf("args: %s", args)
+
+	_, err := r.db.Exec(query, args...)
+	return err
 }

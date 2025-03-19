@@ -79,9 +79,63 @@ func (h *Handler) getListById(c *gin.Context) {
 
 	c.JSON(http.StatusOK, list)
 }
+
+// Обработчик запроса на обновление списков
 func (h *Handler) updateList(c *gin.Context) {
+	// Также получаем id из middleware
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
 
+	// Читаю id из url и преобразуем в число
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
+		return
+	}
+
+	// читаем json запрос с новыми данными для списка
+	var input todoapp.UpdateListInput
+	if err := c.BindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// После всех проверок вызываем бизнес логику
+	if err := h.services.Update(userId, id, input); err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// При успехе выводим Ok
+	c.JSON(http.StatusOK, statusResponse{
+		Status: "ok",
+	})
 }
-func (h *Handler) deleteList(c *gin.Context) {
 
+// Обработчик запроса на удаление
+func (h *Handler) deleteList(c *gin.Context) {
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
+
+	// Читаю id из url и преобразуем в число
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
+		return
+	}
+
+	// Вызов логики для получения по id
+	err = h.services.TodoList.Delete(userId, id)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, statusResponse{
+		Status: "ok",
+	})
 }
