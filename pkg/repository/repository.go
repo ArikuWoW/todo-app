@@ -22,6 +22,11 @@ type TodoList interface {
 
 // Интерфейс для работы с элементами в списках задач
 type TodoItem interface {
+	Create(listId int, item todoapp.TodoItem) (int, error)
+	GetAll(userId, listId int) ([]todoapp.TodoItem, error)
+	GetById(userId, itemId int) (todoapp.TodoItem, error)
+	Delete(userId, itemId int) error
+	Update(userId, itemId int, input todoapp.UpdateItemInput) error
 }
 
 // Для простоты работы в коде, объединяем все интерфейсы в структуру
@@ -35,5 +40,6 @@ func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
 		Authorization: NewAuthPostgres(db),
 		TodoList:      NewTodoListPostgres(db),
+		TodoItem:      NewTodoItemPostgres(db),
 	}
 }
